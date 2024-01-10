@@ -14,5 +14,7 @@ namespace Api.Models
         public string CerNo { get; set; }
         public int EmpID { get; set; }
         public int Active { get; set; }
+
+        public string SkillGroup { get; set; }
     }
 }

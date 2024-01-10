@@ -95,6 +95,14 @@ namespace Api.Controllers
             return Ok(HeadCountbyWorkGroup);
         }
 
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult Manpower_Plan()
+        {
+            IEnumerable<Manpower_Plan> Manpower_Plan = _db.Manpower_Plan;
+            return Ok(Manpower_Plan);
+        }
+
     }
 
 }

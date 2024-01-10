@@ -11,6 +11,7 @@ namespace Api.Data
 
         public DbSet<EmployeeInfo> EmployeeInfo {  get; set; }
         public DbSet<OJT_InspectionSkill> OJT_InspectionSkill { get; set; }
+        public DbSet<Manpower_Plan> Manpower_Plan { get; set; }
         public DbSet<ManpowerRequire> ManpowerRequire { get; set; }
         public DbSet<ProductionPlan> ProductionPlan { get; set; }
         public DbSet<FaceScanLog> FaceScanLog { get; set; }
