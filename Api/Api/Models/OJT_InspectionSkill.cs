@@ -12,7 +12,7 @@ namespace Api.Models
         public string Biz { get; set; }
         public string Process { get; set; }
         public string CerNo { get; set; }
-        public int EmpID { get; set; }
+        public string EmpID { get; set; }
         public int Active { get; set; }
 
         public string SkillGroup { get; set; }

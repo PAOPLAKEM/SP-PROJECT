@@ -5,7 +5,7 @@ namespace Api.Models
     public class EmployeeInfo
     {
         [Key]
-        public int EmpId { get; set; }
+        public string EmpId { get; set; }
 
         [Required]
         public string FirstName { get; set; }

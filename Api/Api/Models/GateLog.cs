@@ -14,7 +14,7 @@ namespace Api.Models
         [Required]
         public string Room { get; set; }
         public string GateNo { get; set; }
-        public int EmpID { get; set; }
+        public string EmpID { get; set; }
         public string Status { get; set; }
 
     }

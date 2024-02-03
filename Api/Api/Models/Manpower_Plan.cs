@@ -12,7 +12,7 @@ namespace Api.Models
             public DateTime Date  { get; set; }
 
             [Required]
-            public string EmpID { get; set; }
+            public string EMPID { get; set; }
             public string Attendance { get; set; }
             public string ShiftCode { get; set; }
             public string Shift { get; set; }

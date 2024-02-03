@@ -12,7 +12,7 @@ namespace Api.Models
         public DateTime Datetime { get; set; }
 
         [Required]
-        public int EMPLOYEE_ID { get; set; }
+        public string EMPLOYEE_ID { get; set; }
         public string Status { get; set; }
     }
 }
