@@ -59,34 +59,50 @@
                 IEnumerable <ProductionPlan> ProductionPlan = _db.ProductionPlan;
                 return Ok(ProductionPlan);
             }
-            [HttpGet]
-            [Route("[action]")]
-            public IActionResult ManpowerPlanWithFaceScanLogandGateLog()
-            {
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult ManpowerPlanWithFaceScanLogandGateLog()
+        {
             DateTime targetDate = new DateTime(2023, 9, 1);
 
             var query = from m in _db.Manpower_Plan
+                        join ei in _db.EmployeeInfo on m.EMPID equals ei.EmpId
                         where m.Date.Date == targetDate
                         select new
                         {
                             ManpowerPlan = m,
-                            FaceScanLog = _db.FaceScanLog.FirstOrDefault(s => s.Datetime.Date == targetDate && s.EMPLOYEE_ID == m.EMPID),
-                            GateLog = _db.GateLog.FirstOrDefault(g => g.EmpID == m.EMPID)
+                            FaceScanLog = _db.FaceScanLog
+                                               .Where(s => s.Datetime.Date == targetDate && s.EMPLOYEE_ID == m.EMPID)
+                                               .OrderByDescending(s => s.Datetime)
+                                               .FirstOrDefault(),
+                            GateLog = _db.GateLog
+                                           .Where(g => g.EmpID == m.EMPID)
+                                           .OrderByDescending(g => g.Datetime)
+                                           .FirstOrDefault(),
+                            EmployeeInfo = new
+                            {
+                                EmpID = ei.EmpId,
+                                FirstName = ei.FirstName,
+                                LastName = ei.LastName,
+                                Biz = ei.Biz,
+                                Process = ei.Process
+                            }
                         };
 
             return Ok(query.ToList());
-            }
 
 
-           // [HttpGet]
-           // [Route("[action]")]
-           // public IActionResult GateLog()
-           // {
-           //     IEnumerable <GateLog> GateLog = _db.GateLog;
-           //     return Ok(GateLog);
-           //}
+        }
 
-            [HttpGet]
+        // [HttpGet]
+        // [Route("[action]")]
+        // public IActionResult GateLog()
+        // {
+        //     IEnumerable <GateLog> GateLog = _db.GateLog;
+        //     return Ok(GateLog);
+        //}
+
+        [HttpGet]
             [Route("[action]")]
             public IActionResult RBAControl()
             {
@@ -125,10 +141,9 @@
             return Ok(query.ToList());
 
 
-
         }
 
-        [HttpGet]
+        /*[HttpGet]
             [Route("[action]")]
             public IActionResult HeadCountTransitionMonth()
             {
@@ -160,6 +175,48 @@
 
             // Return the data
             return Ok(monthDataList);
+        }*/
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult HeadCountTransitionYearMonth()
+        {
+            // Dictionary สำหรับเก็บข้อมูลตามปีและเดือน
+            Dictionary<int, Dictionary<string, List<object>>> yearMonthData = new Dictionary<int, Dictionary<string, List<object>>>();
+
+            // ดึงข้อมูลจากฐานข้อมูล
+            var headCountTransitionData = _db.HeadCountTransition.ToList();
+
+            // วนลูปเพื่อจัดเก็บข้อมูลตามปีและเดือน
+            foreach (var item in headCountTransitionData)
+            {
+                int year = item.Datetime.Year;
+                string monthName = item.Datetime.ToString("MMM");
+
+                // ตรวจสอบว่ามีปีนี้อยู่ใน Dictionary หรือไม่
+                if (!yearMonthData.ContainsKey(year))
+                {
+                    yearMonthData[year] = new Dictionary<string, List<object>>();
+                }
+
+                // ตรวจสอบว่ามีเดือนนี้อยู่ในปีนี้หรือไม่
+                if (!yearMonthData[year].ContainsKey(monthName))
+                {
+                    yearMonthData[year][monthName] = new List<object>();
+                }
+
+                // เพิ่มข้อมูลลงในรายการเดือนนี้
+                yearMonthData[year][monthName].Add(new
+                {
+                    EmpID = item.EmpID,
+                    Datetime = item.Datetime.ToString("yyyy-MM-ddTHH:mm:ss"),
+                    TransType = item.TransType,
+                    Biz = item.Biz,
+                    Process = item.Process
+                });
+            }
+
+            return Ok(yearMonthData);
         }
 
 
