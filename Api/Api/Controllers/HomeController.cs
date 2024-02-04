@@ -3,6 +3,7 @@
     using Microsoft.AspNetCore.Mvc;
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
 
 
@@ -35,21 +36,21 @@
             return Ok(query);
             }
 
-            [HttpGet]
-            [Route("[action]")]
-            public IActionResult OJT_InspectionSkill()
-            {
-                IEnumerable <OJT_InspectionSkill> OJT_InspectionSkill = _db.OJT_InspectionSkill;
-                return Ok(OJT_InspectionSkill);
-            }
+           //[HttpGet]
+           // [Route("[action]")]
+           // public IActionResult OJT_InspectionSkill()
+           // {
+           //     IEnumerable <OJT_InspectionSkill> OJT_InspectionSkill = _db.OJT_InspectionSkill;
+           //    return Ok(OJT_InspectionSkill);
+           // }
 
-            [HttpGet]
-            [Route("[action]")]
-            public IActionResult ManpowerRequire()
-            {
-                IEnumerable <ManpowerRequire> ManpowerRequire = _db.ManpowerRequire;
-                return Ok(ManpowerRequire);
-            }
+           // [HttpGet]
+           // [Route("[action]")]
+           // public IActionResult ManpowerRequire()
+           // {
+           //    IEnumerable <ManpowerRequire> ManpowerRequire = _db.ManpowerRequire;
+           //    return Ok(ManpowerRequire);
+           // }
 
             [HttpGet]
             [Route("[action]")]
@@ -77,13 +78,13 @@
             }
 
 
-            [HttpGet]
-            [Route("[action]")]
-            public IActionResult GateLog()
-            {
-                IEnumerable <GateLog> GateLog = _db.GateLog;
-                return Ok(GateLog);
-            }
+           // [HttpGet]
+           // [Route("[action]")]
+           // public IActionResult GateLog()
+           // {
+           //     IEnumerable <GateLog> GateLog = _db.GateLog;
+           //     return Ok(GateLog);
+           //}
 
             [HttpGet]
             [Route("[action]")]
@@ -93,15 +94,76 @@
                 return Ok(RBAControl);
             }
 
-            [HttpGet]
+           // [HttpGet]
+           // [Route("[action]")]
+           // public IActionResult HeadCountTransition()
+           // {
+           //    IEnumerable <HeadCountTransition> HeadCountTransition = _db.HeadCountTransition;
+           //    return Ok(HeadCountTransition);
+           // }
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult HeadCountTransitionCOUNT()
+        {
+            var currentMonth = 9;    //DateTime.Now.Month;
+
+            var query = from m in _db.ManpowerRequire
+                        join ei in _db.EmployeeInfo on m.Process equals ei.Process
+                        where m.Date.Month == currentMonth
+                        group new { m, ei } by new { m.Biz, m.Process, m.Date, m.Require, m.SkillGroup } into grouped
+                        select new
+                        {
+                            Biz = grouped.Key.Biz,
+                            Process = grouped.Key.Process,
+                            Date = grouped.Key.Date,
+                            Require = grouped.Key.Require,
+                            SkillGroup = grouped.Key.SkillGroup,
+                            TotalEmployees = grouped.Count()
+                        };
+
+            return Ok(query.ToList());
+
+
+
+        }
+
+        [HttpGet]
             [Route("[action]")]
-            public IActionResult HeadCountTransition()
+            public IActionResult HeadCountTransitionMonth()
             {
-                IEnumerable <HeadCountTransition> HeadCountTransition = _db.HeadCountTransition;
-                return Ok(HeadCountTransition);
+            List<object> monthDataList = new List<object>();
+
+            for (int i = 1; i <= 12; i++)
+            {
+                var monthData = (from hct in _db.HeadCountTransition
+                                 where hct.Datetime.Month == i
+                                 select new
+                                 {
+                                     EmpID = hct.EmpID,
+                                     Datetime = hct.Datetime,
+                                     TransType = hct.TransType,
+                                     Biz = hct.Biz,
+                                     Process = hct.Process
+                                 }).ToList();
+
+                // Create a dictionary to store the data for the month
+                Dictionary<string, object> monthDict = new Dictionary<string, object>();
+                string monthName = DateTimeFormatInfo.CurrentInfo.GetAbbreviatedMonthName(i);
+
+                // Add data to the dictionary
+                monthDict.Add(monthName, monthData);
+
+                // Add the dictionary to the list
+                monthDataList.Add(monthDict);
             }
 
-            [HttpGet]
+            // Return the data
+            return Ok(monthDataList);
+        }
+
+
+        [HttpGet]
             [Route("[action]")]
             public IActionResult HeadCountbyDiv()
             {
@@ -117,13 +179,13 @@
                 return Ok(HeadCountbyWorkGroup);
             }
 
-            [HttpGet]
-            [Route("[action]")]
-            public IActionResult Manpower_Plan()
-            {
-                IEnumerable<Manpower_Plan> Manpower_Plan = _db.Manpower_Plan;
-                return Ok(Manpower_Plan);
-            }
+            //[HttpGet]
+            //[Route("[action]")]
+            //public IActionResult Manpower_Plan()
+            //{
+              //  IEnumerable<Manpower_Plan> Manpower_Plan = _db.Manpower_Plan;
+                //return Ok(Manpower_Plan);
+            //}
 
         }
 
