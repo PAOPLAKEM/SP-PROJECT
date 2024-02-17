@@ -21,45 +21,103 @@
                 _db = db;
             }
 
-            /*[HttpGet]
-            [Route("[action]")]
-            public IActionResult EmployeeInfo_with_SKILL()
-            {
-            var query = from ei in _db.EmployeeInfo
-                        join ojt in _db.OJT_InspectionSkill on ei.EmpId equals ojt.EmpID
+        /*[HttpGet]
+        [Route("[action]")]
+        public IActionResult EmployeeInfo_with_SKILL()
+        {
+        var query = from ei in _db.EmployeeInfo
+                    join ojt in _db.OJT_InspectionSkill on ei.EmpId equals ojt.EmpID
+                    select new
+                    {
+                        EmployeeInfo = ei,
+                        OJT_InspectionSkill = ojt
+                    };
+
+        return Ok(query);
+        }*/
+
+        //[HttpGet]
+        // [Route("[action]")]
+        // public IActionResult OJT_InspectionSkill()
+        // {
+        //     IEnumerable <OJT_InspectionSkill> OJT_InspectionSkill = _db.OJT_InspectionSkill;
+        //    return Ok(OJT_InspectionSkill);
+        // }
+
+        // [HttpGet]
+        // [Route("[action]")]
+        // public IActionResult ManpowerRequire()
+        // {
+        //    IEnumerable <ManpowerRequire> ManpowerRequire = _db.ManpowerRequire;
+        //    return Ok(ManpowerRequire);
+        // }
+
+        /*[HttpGet]
+        [Route("[action]")]
+        public IActionResult ProductionPlan()
+        {
+            IEnumerable <ProductionPlan> ProductionPlan = _db.ProductionPlan;
+            return Ok(ProductionPlan);
+        }*/
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult CombinedData()
+        {
+            DateTime targetDate = new DateTime(2024, 2, 1);
+
+            var query = from m in _db.Manpower_Plan
+                        join ei in _db.EmployeeInfo on m.EMPID equals ei.EmpId
+                        where m.Date.Date == targetDate && m.Attendance == "O"
                         select new
                         {
-                            EmployeeInfo = ei,
-                            OJT_InspectionSkill = ojt
+                            ManpowerPlan = m,
+                            EmployeeInfo = ei
                         };
 
-            return Ok(query);
-            }*/
+            var combinedDataList = new List<object>();
 
-           //[HttpGet]
-           // [Route("[action]")]
-           // public IActionResult OJT_InspectionSkill()
-           // {
-           //     IEnumerable <OJT_InspectionSkill> OJT_InspectionSkill = _db.OJT_InspectionSkill;
-           //    return Ok(OJT_InspectionSkill);
-           // }
-
-           // [HttpGet]
-           // [Route("[action]")]
-           // public IActionResult ManpowerRequire()
-           // {
-           //    IEnumerable <ManpowerRequire> ManpowerRequire = _db.ManpowerRequire;
-           //    return Ok(ManpowerRequire);
-           // }
-
-            [HttpGet]
-            [Route("[action]")]
-            public IActionResult ProductionPlan()
+            foreach (var item in query.ToList())
             {
-                IEnumerable <ProductionPlan> ProductionPlan = _db.ProductionPlan;
-                return Ok(ProductionPlan);
+                var ojtSkills = _db.OJT_InspectionSkill.Where(o => o.EmpID == item.EmployeeInfo.EmpId).ToList();
+                var faceScanLog = _db.FaceScanLog.Where(s => s.EMPLOYEE_ID == item.ManpowerPlan.EMPID)
+                                                  .OrderByDescending(s => s.Datetime)
+                                                  .FirstOrDefault();
+                var gateLog = _db.GateLog.Where(g => g.EmpID == item.ManpowerPlan.EMPID)
+                                          .OrderByDescending(g => g.Datetime)
+                                          .FirstOrDefault();
+
+                // ตรวจสอบเงื่อนไขเวลาเพื่อเลือก shift จาก ManpowerPlan
+                var shift = item.ManpowerPlan.Shift;
+                if (shift == "Day" && targetDate.Hour >= 7 && targetDate.Hour < 19)
+                {
+                    var combinedData = new
+                    {
+                        ManpowerPlan = item.ManpowerPlan,
+                        EmployeeInfo = item.EmployeeInfo,
+                        OJT_InspectionSkill = ojtSkills,
+                        FaceScanLog = faceScanLog,
+                        GateLog = gateLog
+                    };
+                    combinedDataList.Add(combinedData);
+                }
+                else if (shift == "Night" && (targetDate.Hour >= 19 || targetDate.Hour < 7))
+                {
+                    var combinedData = new
+                    {
+                        ManpowerPlan = item.ManpowerPlan,
+                        EmployeeInfo = item.EmployeeInfo,
+                        OJT_InspectionSkill = ojtSkills,
+                        FaceScanLog = faceScanLog,
+                        GateLog = gateLog
+                    };
+                    combinedDataList.Add(combinedData);
+                }
             }
-        [HttpGet]
+
+            return Ok(combinedDataList);
+        }
+
+/*        [HttpGet]
         [Route("[action]")]
         public IActionResult CombinedData()
         {
@@ -100,8 +158,7 @@
 
             return Ok(combinedDataList);
 
-        }
-
+        }*/
 
 
 
@@ -185,23 +242,22 @@
                 return Ok(RBAControl);
             }
 
-           // [HttpGet]
-           // [Route("[action]")]
-           // public IActionResult HeadCountTransition()
-           // {
-           //    IEnumerable <HeadCountTransition> HeadCountTransition = _db.HeadCountTransition;
-           //    return Ok(HeadCountTransition);
-           // }
-
+        // [HttpGet]
+        // [Route("[action]")]
+        // public IActionResult HeadCountTransition()
+        // {
+        //    IEnumerable <HeadCountTransition> HeadCountTransition = _db.HeadCountTransition;
+        //    return Ok(HeadCountTransition);
+        // }
         [HttpGet]
         [Route("[action]")]
         public IActionResult HeadCountTransitionCOUNT()
         {
-            var currentMonth = 9;    //DateTime.Now.Month;
+            DateTime targetDate = new DateTime(2024, 2, 1);    //DateTime.Now.Month;
 
             var query = from m in _db.ManpowerRequire
                         join ei in _db.EmployeeInfo on m.Process equals ei.Process
-                        where m.Date.Month == currentMonth
+                        where m.Date.Date == targetDate
                         group new { m, ei } by new { m.Biz, m.Process, m.Date, m.Require, m.SkillGroup } into grouped
                         select new
                         {
@@ -217,6 +273,36 @@
 
 
         }
+        /*[HttpGet]
+        [Route("[action]")]
+        public IActionResult HeadCountTransitionCOUNT()
+        {
+            DateTime targetDate = new DateTime(2024, 2, 1);    //DateTime.Now.Month;
+
+            var query = from m in _db.ManpowerRequire
+                        join ei in _db.EmployeeInfo on m.Process equals ei.Process
+                        where m.Date.Date == targetDate
+                        group new { m, ei } by new { m.Biz, m.Process, m.Date, m.Require, m.SkillGroup, m.Shift } into grouped
+                        select new
+                        {
+                            Biz = grouped.Key.Biz,
+                            Process = grouped.Key.Process,
+                            Date = grouped.Key.Date,
+                            Require = grouped.Key.Require,
+                            SkillGroup = grouped.Key.SkillGroup,
+                            Shift = grouped.Key.Shift,
+                            TotalEmployees = grouped.Count()
+                        };
+
+            // เพิ่มเงื่อนไขเวลาเพื่อเลือก shift จาก ManpowerRequire
+            var targetHour = targetDate.Hour;
+            var filteredQuery = query.ToList().Where(item =>
+                (item.Shift == "Day" && targetHour >= 7 && targetHour < 19) ||
+                (item.Shift == "Night" && (targetHour >= 19 || targetHour < 7))
+            );
+
+            return Ok(filteredQuery);
+        }*/
 
         /*[HttpGet]
             [Route("[action]")]

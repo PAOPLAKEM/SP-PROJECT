@@ -19,5 +19,6 @@ namespace Api.Models
         public int Require { get; set; }
         public string SkillGroup { get; set; }
 
+
     }
 }
