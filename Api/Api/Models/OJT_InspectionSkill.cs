@@ -5,16 +5,16 @@ namespace Api.Models
     public class OJT_InspectionSkill
     {
         [Key]
-        public string CourseNo { get; set; }
+        public string courseno { get; set; }
 
         [Required]
-        public string CourseGroup { get; set; }
-        public string Biz { get; set; }
-        public string Process { get; set; }
-        public string CerNo { get; set; }
-        public string EmpID { get; set; }
-        public int Active { get; set; }
+        public string coursegroup { get; set; }
+        public string biz { get; set; }
+        public string process { get; set; }
+        public string cerno { get; set; }
+        public string empid { get; set; }
+        public int active { get; set; }
 
-        public string SkillGroup { get; set; }
+        public string skillgroup { get; set; }
     }
 }

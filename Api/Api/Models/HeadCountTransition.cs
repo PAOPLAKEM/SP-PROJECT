@@ -9,12 +9,12 @@ namespace Api.Models
     {
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd HH:mm}")]
         [DataType(DataType.Date)]
-        public DateTime Datetime { get; set; }
+        public DateTime datetime { get; set; }
 
         [Required]
-        public string EmpID { get; set; }
-        public string TransType { get; set; }
-        public string Biz { get; set; }
-        public string Process { get; set; }
+        public string empid { get; set; }
+        public string transtype { get; set; }
+        public string biz { get; set; }
+        public string process { get; set; }
     }
 }

@@ -7,8 +7,8 @@ namespace Api.Models
     public class HeadCountbyDiv
     {
         [Required]
-        public string Division { get; set; }
-        public string Department { get; set; }
-        public int HC { get; set; }
+        public string division { get; set; }
+        public string department { get; set; }
+        public int hc { get; set; }
     }
 }
