@@ -7,9 +7,9 @@ namespace Api.Models
     public class RBAControl
     {
         [Required]
-        public string Biz { get; set; }
-        public string Process { get; set; }
-        public string Status { get; set; }
-        public int StatusVal { get; set; }
+        public string biz { get; set; }
+        public string process { get; set; }
+        public string status { get; set; }
+        public int statusval { get; set; }
     }
 }

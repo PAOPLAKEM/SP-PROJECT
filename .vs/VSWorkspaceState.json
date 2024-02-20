@@ -8,6 +8,6 @@
     "\\Api\\Api\\Data",
     "\\Api\\Api\\Models"
   ],
-  "SelectedNode": "\\Api\\Api.sln",
+  "SelectedNode": "\\Api\\Api\\Controllers\\HomeController.cs",
   "PreviewInSolutionExplorer": false
 }

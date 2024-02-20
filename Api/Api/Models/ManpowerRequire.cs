@@ -8,16 +8,16 @@ namespace Api.Models
     public class ManpowerRequire
     {
         [Required]
-        public string Biz { get; set; }
-        public string Process { get; set; }
+        public string biz { get; set; }
+        public string process { get; set; }
 
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}")]
         [DataType(DataType.Date)]
-        public DateTime Date { get; set; }
+        public DateTime date { get; set; }
 
         [Required]
-        public int Require { get; set; }
-        public string SkillGroup { get; set; }
+        public int require { get; set; }
+        public string skillgroup { get; set; }
 
 
     }

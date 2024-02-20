@@ -8,6 +8,6 @@ namespace Api.Models
     {
         [Required]
         public string Group { get; set; }
-        public int HC { get; set; }
+        public int hc { get; set; }
     }
 }

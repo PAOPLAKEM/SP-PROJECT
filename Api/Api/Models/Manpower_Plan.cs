@@ -9,13 +9,13 @@ namespace Api.Models
         {
             [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}")]
             [DataType(DataType.Date)]
-            public DateTime Date  { get; set; }
+            public DateTime date  { get; set; }
 
             [Required]
-            public string EMPID { get; set; }
-            public string Attendance { get; set; }
-            public string ShiftCode { get; set; }
-            public string Shift { get; set; }
+            public string empid { get; set; }
+            public string attendance { get; set; }
+            public string shiftcode { get; set; }
+            public string shift { get; set; }
         }
     
 }

@@ -9,17 +9,17 @@ namespace Api.Data
 
         }
 
-        public DbSet<EmployeeInfo> EmployeeInfo {  get; set; }
-        public DbSet<OJT_InspectionSkill> OJT_InspectionSkill { get; set; }
-        public DbSet<Manpower_Plan> Manpower_Plan { get; set; }
-        public DbSet<ManpowerRequire> ManpowerRequire { get; set; }
-        public DbSet<ProductionPlan> ProductionPlan { get; set; }
-        public DbSet<FaceScanLog> FaceScanLog { get; set; }
-        public DbSet<GateLog> GateLog { get; set; }
-        public DbSet<RBAControl> RBAControl { get; set; }
-        public DbSet<HeadCountTransition> HeadCountTransition { get; set; }
-        public DbSet<HeadCountbyDiv> HeadCountbyDiv { get; set; }
-        public DbSet<HeadCountbyWorkGroup> HeadCountbyWorkGroup { get; set; }
+        public DbSet<EmployeeInfo> employeeinfo {  get; set; }
+        public DbSet<OJT_InspectionSkill> ojt_inspectionskill { get; set; }
+        public DbSet<Manpower_Plan> manpower_plan { get; set; }
+        public DbSet<ManpowerRequire> manpowerrequire { get; set; }
+        public DbSet<ProductionPlan> productionplan { get; set; }
+        public DbSet<FaceScanLog> facescanlog { get; set; }
+        public DbSet<GateLog> gatelog { get; set; }
+        public DbSet<RBAControl> rbacontrol { get; set; }
+        public DbSet<HeadCountTransition> headcounttransition { get; set; }
+        public DbSet<HeadCountbyDiv> headcountbydiv { get; set; }
+        public DbSet<HeadCountbyWorkGroup> headcountbyworkgroup { get; set; }
 
     }
 }

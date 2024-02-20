@@ -9,13 +9,13 @@ namespace Api.Models
     {
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd HH:mm}")]
         [DataType(DataType.Date)]
-        public DateTime Datetime { get; set; }
+        public DateTime datetime { get; set; }
 
         [Required]
-        public string Room { get; set; }
-        public string GateNo { get; set; }
-        public string EmpID { get; set; }
-        public string Status { get; set; }
+        public string room { get; set; }
+        public string gateno { get; set; }
+        public string empid { get; set; }
+        public string status { get; set; }
 
     }
 }

@@ -5,15 +5,15 @@ namespace Api.Models
     public class EmployeeInfo
     {
         [Key]
-        public string EmpId { get; set; }
+        public string empid { get; set; }
 
         [Required]
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string Division { get; set; }
-        public string Department { get; set; }
-        public string Biz { get; set; }
-        public string Process { get; set; }
+        public string firstname { get; set; }
+        public string lastname { get; set; }
+        public string division { get; set; }
+        public string department { get; set; }
+        public string biz { get; set; }
+        public string process { get; set; }
     }
 
 }

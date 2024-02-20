@@ -52,22 +52,22 @@
         //    return Ok(ManpowerRequire);
         // }
 
-        /*[HttpGet]
+        [HttpGet]
         [Route("[action]")]
         public IActionResult ProductionPlan()
         {
-            IEnumerable <ProductionPlan> ProductionPlan = _db.ProductionPlan;
+            IEnumerable<ProductionPlan> ProductionPlan = _db.productionplan;
             return Ok(ProductionPlan);
-        }*/
+        }
         [HttpGet]
         [Route("[action]")]
         public IActionResult CombinedData()
         {
             DateTime targetDate = new DateTime(2024, 2, 1);
 
-            var query = from m in _db.Manpower_Plan
-                        join ei in _db.EmployeeInfo on m.EMPID equals ei.EmpId
-                        where m.Date.Date == targetDate && m.Attendance == "O"
+            var query = from m in _db.manpower_plan
+                        join ei in _db.employeeinfo on m.empid equals ei.empid
+                        where m.date.Date == targetDate && m.attendance == "O"
                         select new
                         {
                             ManpowerPlan = m,
@@ -78,16 +78,16 @@
 
             foreach (var item in query.ToList())
             {
-                var ojtSkills = _db.OJT_InspectionSkill.Where(o => o.EmpID == item.EmployeeInfo.EmpId).ToList();
-                var faceScanLog = _db.FaceScanLog.Where(s => s.EMPLOYEE_ID == item.ManpowerPlan.EMPID)
-                                                  .OrderByDescending(s => s.Datetime)
+                var ojtSkills = _db.ojt_inspectionskill.Where(o => o.empid == item.EmployeeInfo.empid).ToList();
+                var faceScanLog = _db.facescanlog.Where(s => s.employee_id == item.ManpowerPlan.empid)
+                                                  .OrderByDescending(s => s.datetime)
                                                   .FirstOrDefault();
-                var gateLog = _db.GateLog.Where(g => g.EmpID == item.ManpowerPlan.EMPID)
-                                          .OrderByDescending(g => g.Datetime)
+                var gateLog = _db.gatelog.Where(g => g.empid == item.ManpowerPlan.empid)
+                                          .OrderByDescending(g => g.datetime)
                                           .FirstOrDefault();
 
                 // ตรวจสอบเงื่อนไขเวลาเพื่อเลือก shift จาก ManpowerPlan
-                var shift = item.ManpowerPlan.Shift;
+                var shift = item.ManpowerPlan.shift;
                 if (shift == "Day" && targetDate.Hour >= 7 && targetDate.Hour < 19)
                 {
                     var combinedData = new
@@ -117,15 +117,17 @@
             return Ok(combinedDataList);
         }
 
-/*        [HttpGet]
-        [Route("[action]")]
-        public IActionResult CombinedData()
-        {
-            DateTime targetDate = new DateTime(2023, 9, 1);
 
-            var query = from m in _db.Manpower_Plan
-                        join ei in _db.EmployeeInfo on m.EMPID equals ei.EmpId
-                        where m.Date.Date == targetDate
+
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult NOT_INCLEAN()
+        {
+            DateTime targetDate = new DateTime(2024, 2, 1);
+
+            var query = from m in _db.manpower_plan
+                        join ei in _db.employeeinfo on m.empid equals ei.empid
+                        where m.date.Date == targetDate
                         select new
                         {
                             ManpowerPlan = m,
@@ -136,29 +138,29 @@
 
             foreach (var item in query.ToList()) // ใช้ .ToList() ที่นี่
             {
-                var ojtSkills = _db.OJT_InspectionSkill.Where(o => o.EmpID == item.EmployeeInfo.EmpId).ToList();
-                var faceScanLog = _db.FaceScanLog.Where(s => s.Datetime.Date == targetDate && s.EMPLOYEE_ID == item.ManpowerPlan.EMPID)
-                                                  .OrderByDescending(s => s.Datetime)
+                var faceScanLog = _db.facescanlog.Where(s => s.datetime.Date == targetDate && s.employee_id == item.ManpowerPlan.empid)
+                                                  .OrderByDescending(s => s.datetime)
                                                   .FirstOrDefault();
-                var gateLog = _db.GateLog.Where(g => g.EmpID == item.ManpowerPlan.EMPID)
-                                          .OrderByDescending(g => g.Datetime)
+
+                var gateLog = _db.gatelog.Where(g => g.empid == item.ManpowerPlan.empid)
+                                          .OrderByDescending(g => g.datetime)
                                           .FirstOrDefault();
 
-                var combinedData = new
+                // เพิ่มเงื่อนไขเชื่อมโยงเพื่อตรวจสอบสถานะของ faceScanLog และ gateLog
+                if ((faceScanLog != null && faceScanLog.status == "IN") && (gateLog == null || gateLog.status == "OUT"))
                 {
-                    ManpowerPlan = item.ManpowerPlan,
-                    EmployeeInfo = item.EmployeeInfo,
-                    OJT_InspectionSkill = ojtSkills,
-                    FaceScanLog = faceScanLog,
-                    GateLog = gateLog
-                };
+                    var combinedData = new
+                    {
+                        EmployeeInfo = item.EmployeeInfo
+                    };
 
-                combinedDataList.Add(combinedData);
+                    combinedDataList.Add(combinedData);
+                }
             }
 
             return Ok(combinedDataList);
+        }
 
-        }*/
 
 
 
@@ -238,7 +240,7 @@
             [Route("[action]")]
             public IActionResult RBAControl()
             {
-                IEnumerable<RBAControl> RBAControl = _db.RBAControl;
+                IEnumerable<RBAControl> RBAControl = _db.rbacontrol;
                 return Ok(RBAControl);
             }
 
@@ -255,17 +257,17 @@
         {
             DateTime targetDate = new DateTime(2024, 2, 1);    //DateTime.Now.Month;
 
-            var query = from m in _db.ManpowerRequire
-                        join ei in _db.EmployeeInfo on m.Process equals ei.Process
-                        where m.Date.Date == targetDate
-                        group new { m, ei } by new { m.Biz, m.Process, m.Date, m.Require, m.SkillGroup } into grouped
+            var query = from m in _db.manpowerrequire
+                        join ei in _db.employeeinfo on m.process equals ei.process
+                        where m.date.Date == targetDate
+                        group new { m, ei } by new { m.biz, m.process, m.date, m.require, m.skillgroup } into grouped
                         select new
                         {
-                            Biz = grouped.Key.Biz,
-                            Process = grouped.Key.Process,
-                            Date = grouped.Key.Date,
-                            Require = grouped.Key.Require,
-                            SkillGroup = grouped.Key.SkillGroup,
+                            Biz = grouped.Key.biz,
+                            Process = grouped.Key.process,
+                            Date = grouped.Key.date,
+                            Require = grouped.Key.require,
+                            SkillGroup = grouped.Key.skillgroup,
                             TotalEmployees = grouped.Count()
                         };
 
@@ -345,13 +347,13 @@
             Dictionary<int, Dictionary<string, List<object>>> yearMonthData = new Dictionary<int, Dictionary<string, List<object>>>();
 
             // ดึงข้อมูลจากฐานข้อมูล
-            var headCountTransitionData = _db.HeadCountTransition.ToList();
+            var headCountTransitionData = _db.headcounttransition.ToList();
 
             // วนลูปเพื่อจัดเก็บข้อมูลตามปีและเดือน
             foreach (var item in headCountTransitionData)
             {
-                int year = item.Datetime.Year;
-                string monthName = item.Datetime.ToString("MMM");
+                int year = item.datetime.Year;
+                string monthName = item.datetime.ToString("MMM");
 
                 // ตรวจสอบว่ามีปีนี้อยู่ใน Dictionary หรือไม่
                 if (!yearMonthData.ContainsKey(year))
@@ -368,11 +370,11 @@
                 // เพิ่มข้อมูลลงในรายการเดือนนี้
                 yearMonthData[year][monthName].Add(new
                 {
-                    EmpID = item.EmpID,
-                    Datetime = item.Datetime.ToString("yyyy-MM-ddTHH:mm:ss"),
-                    TransType = item.TransType,
-                    Biz = item.Biz,
-                    Process = item.Process
+                    EmpID = item.empid,
+                    Datetime = item.datetime.ToString("yyyy-MM-ddTHH:mm:ss"),
+                    TransType = item.transtype,
+                    Biz = item.biz,
+                    Process = item.process
                 });
             }
 
@@ -447,11 +449,11 @@
         }*/
 
 
-        [HttpGet]
+            [HttpGet]
             [Route("[action]")]
             public IActionResult HeadCountbyDiv()
             {
-                IEnumerable <HeadCountbyDiv> HeadCountbyDiv = _db.HeadCountbyDiv;
+                IEnumerable <HeadCountbyDiv> HeadCountbyDiv = _db.headcountbydiv;
                 return Ok(HeadCountbyDiv);
             }
 
@@ -459,7 +461,7 @@
             [Route("[action]")]
             public IActionResult HeadCountbyWorkGroup()
             {
-                IEnumerable <HeadCountbyWorkGroup> HeadCountbyWorkGroup = _db.HeadCountbyWorkGroup;
+                IEnumerable <HeadCountbyWorkGroup> HeadCountbyWorkGroup = _db.headcountbyworkgroup;
                 return Ok(HeadCountbyWorkGroup);
             }
 
