@@ -273,6 +273,47 @@
 
 
         }
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult NOT_INCLEAN()
+        {
+            DateTime targetDate = new DateTime(2024, 2, 1);
+
+            var query = from m in _db.Manpower_Plan
+                        join ei in _db.EmployeeInfo on m.EMPID equals ei.EmpId
+                        where m.Date.Date == targetDate
+                        select new
+                        {
+                            ManpowerPlan = m,
+                            EmployeeInfo = ei
+                        };
+
+            var combinedDataList = new List<object>();
+
+            foreach (var item in query.ToList()) // ใช้ .ToList() ที่นี่
+            {
+                var faceScanLog = _db.FaceScanLog.Where(s => s.Datetime.Date == targetDate && s.EMPLOYEE_ID == item.ManpowerPlan.EMPID)
+                                                  .OrderByDescending(s => s.Datetime)
+                                                  .FirstOrDefault();
+
+                var gateLog = _db.GateLog.Where(g => g.EmpID == item.ManpowerPlan.EMPID)
+                                          .OrderByDescending(g => g.Datetime)
+                                          .FirstOrDefault();
+
+                // เพิ่มเงื่อนไขเชื่อมโยงเพื่อตรวจสอบสถานะของ faceScanLog และ gateLog
+                if ((faceScanLog != null && faceScanLog.Status == "IN") && (gateLog == null || gateLog.Status == "OUT"))
+                {
+                    var combinedData = new
+                    {
+                        EmployeeInfo = item.EmployeeInfo
+                    };
+
+                    combinedDataList.Add(combinedData);
+                }
+            }
+
+            return Ok(combinedDataList);
+        }
         /*[HttpGet]
         [Route("[action]")]
         public IActionResult HeadCountTransitionCOUNT()
