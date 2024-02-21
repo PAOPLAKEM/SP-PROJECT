@@ -20,6 +20,7 @@ namespace Api.Data
         public DbSet<HeadCountTransition> HeadCountTransition { get; set; }
         public DbSet<HeadCountbyDiv> HeadCountbyDiv { get; set; }
         public DbSet<HeadCountbyWorkGroup> HeadCountbyWorkGroup { get; set; }
+        public DbSet<Transaction_data> Transaction_data { get; set; }
 
     }
 }

@@ -52,13 +52,13 @@
         //    return Ok(ManpowerRequire);
         // }
 
-        /*[HttpGet]
+        [HttpGet]
         [Route("[action]")]
-        public IActionResult ProductionPlan()
+        public IActionResult Transition()
         {
-            IEnumerable <ProductionPlan> ProductionPlan = _db.ProductionPlan;
-            return Ok(ProductionPlan);
-        }*/
+            IEnumerable<Transaction_data> Tran = _db.Transaction_data;
+            return Ok(Tran);
+        }
         [HttpGet]
         [Route("[action]")]
         public IActionResult CombinedData()
@@ -273,6 +273,54 @@
 
 
         }
+        /*[HttpGet]
+        [Route("[action]")]
+        public IActionResult NOT_INCLEAN()
+        {
+            DateTime targetDate = new DateTime(2024, 2, 1);
+
+            // ดึงข้อมูลจาก Manpower_Plan และ EmployeeInfo
+            var query = from m in _db.Manpower_Plan
+                        join ei in _db.EmployeeInfo on m.EMPID equals ei.EmpId
+                        where m.Date.Date == targetDate
+                        select new
+                        {
+                            ManpowerPlan = m,
+                            EmployeeInfo = ei
+                        };
+
+            var combinedDataList = new List<object>();
+
+            foreach (var item in query.ToList())
+            {
+                // ดึงข้อมูล Transaction ที่ตรงกับ employeeID จาก Manpower_Plan และ EmployeeInfo
+                var transactionDataList = _db.Transaction_data
+                    .Where(td => td.EmployeeID == item.EmployeeInfo.EmpId)
+                    .Select(td => new
+                    {
+                        td.EmployeeID,
+                        td.Name,
+                        td.DateTime,
+                        td.CameraNo
+                    })
+                    .ToList();
+
+                
+                    var combinedData = new
+                    {
+                        EmployeeInfo = item.EmployeeInfo,
+                        TransactionData = transactionDataList
+                    };
+
+                    combinedDataList.Add(combinedData);
+                
+            }
+
+            return Ok(combinedDataList);
+        }*/
+
+
+
         [HttpGet]
         [Route("[action]")]
         public IActionResult NOT_INCLEAN()
@@ -299,13 +347,26 @@
                 var gateLog = _db.GateLog.Where(g => g.EmpID == item.ManpowerPlan.EMPID)
                                           .OrderByDescending(g => g.Datetime)
                                           .FirstOrDefault();
+                var transactionDataList = _db.Transaction_data
+                   .Where(td => td.EmployeeID == item.EmployeeInfo.EmpId)
+                   .Select(td => new
+                   {
+                       td.EmployeeID,
+                       td.Name,
+                       td.DateTime,
+                       td.CameraNo
+                   })
+                   .ToList();
+
 
                 // เพิ่มเงื่อนไขเชื่อมโยงเพื่อตรวจสอบสถานะของ faceScanLog และ gateLog
                 if ((faceScanLog != null && faceScanLog.Status == "IN") && (gateLog == null || gateLog.Status == "OUT"))
                 {
+
                     var combinedData = new
                     {
-                        EmployeeInfo = item.EmployeeInfo
+                        EmployeeInfo = item.EmployeeInfo,
+                        TransactionData = transactionDataList
                     };
 
                     combinedDataList.Add(combinedData);
