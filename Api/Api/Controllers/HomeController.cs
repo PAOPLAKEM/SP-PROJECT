@@ -54,11 +54,58 @@
 
         [HttpGet]
         [Route("[action]")]
-        public IActionResult Transition()
+        public IActionResult REALTIME_ATTEN()
         {
-            IEnumerable<Transaction_data> Tran = _db.Transaction_data;
-            return Ok(Tran);
+            DateTime targetDate = new DateTime(2024, 2, 1);
+
+            var query = from m in _db.Manpower_Plan
+                        join ei in _db.EmployeeInfo on m.EMPID equals ei.EmpId
+                        where m.Date.Date == targetDate && m.Attendance == "O"
+                        select new
+                        {
+                            ManpowerPlan = m,
+                            EmployeeInfo = ei
+                        };
+
+            var combinedDataList = new List<object>();
+
+            foreach (var item in query.ToList())
+            {
+                var faceScanLog = _db.FaceScanLog.Where(s => s.EMPLOYEE_ID == item.ManpowerPlan.EMPID)
+                                                  .OrderByDescending(s => s.Datetime)
+                                                  .FirstOrDefault();
+                var gateLog = _db.GateLog.Where(g => g.EmpID == item.ManpowerPlan.EMPID)
+                                          .OrderByDescending(g => g.Datetime)
+                                          .FirstOrDefault();
+
+                // ตรวจสอบเงื่อนไขเวลาเพื่อเลือก shift จาก ManpowerPlan
+                var shift = item.ManpowerPlan.Shift;
+                if (shift == "Day" && targetDate.Hour >= 7 && targetDate.Hour < 19)
+                {
+                    var combinedData = new
+                    {
+                        ManpowerPlan = item.ManpowerPlan,
+                        FaceScanLog = faceScanLog,
+                        GateLog = gateLog
+                    };
+                    combinedDataList.Add(combinedData);
+                }
+                else if (shift == "Night" && (targetDate.Hour >= 19 || targetDate.Hour < 7))
+                {
+                    var combinedData = new
+                    {
+                        ManpowerPlan = item.ManpowerPlan,
+                        EmployeeInfo = item.EmployeeInfo,
+                        FaceScanLog = faceScanLog,
+                        GateLog = gateLog
+                    };
+                    combinedDataList.Add(combinedData);
+                }
+            }
+
+            return Ok(combinedDataList);
         }
+
         [HttpGet]
         [Route("[action]")]
         public IActionResult CombinedData()
@@ -117,48 +164,48 @@
             return Ok(combinedDataList);
         }
 
-/*        [HttpGet]
-        [Route("[action]")]
-        public IActionResult CombinedData()
-        {
-            DateTime targetDate = new DateTime(2023, 9, 1);
+        /*        [HttpGet]
+                [Route("[action]")]
+                public IActionResult CombinedData()
+                {
+                    DateTime targetDate = new DateTime(2023, 9, 1);
 
-            var query = from m in _db.Manpower_Plan
-                        join ei in _db.EmployeeInfo on m.EMPID equals ei.EmpId
-                        where m.Date.Date == targetDate
-                        select new
+                    var query = from m in _db.Manpower_Plan
+                                join ei in _db.EmployeeInfo on m.EMPID equals ei.EmpId
+                                where m.Date.Date == targetDate
+                                select new
+                                {
+                                    ManpowerPlan = m,
+                                    EmployeeInfo = ei
+                                };
+
+                    var combinedDataList = new List<object>();
+
+                    foreach (var item in query.ToList()) // ใช้ .ToList() ที่นี่
+                    {
+                        var ojtSkills = _db.OJT_InspectionSkill.Where(o => o.EmpID == item.EmployeeInfo.EmpId).ToList();
+                        var faceScanLog = _db.FaceScanLog.Where(s => s.Datetime.Date == targetDate && s.EMPLOYEE_ID == item.ManpowerPlan.EMPID)
+                                                          .OrderByDescending(s => s.Datetime)
+                                                          .FirstOrDefault();
+                        var gateLog = _db.GateLog.Where(g => g.EmpID == item.ManpowerPlan.EMPID)
+                                                  .OrderByDescending(g => g.Datetime)
+                                                  .FirstOrDefault();
+
+                        var combinedData = new
                         {
-                            ManpowerPlan = m,
-                            EmployeeInfo = ei
+                            ManpowerPlan = item.ManpowerPlan,
+                            EmployeeInfo = item.EmployeeInfo,
+                            OJT_InspectionSkill = ojtSkills,
+                            FaceScanLog = faceScanLog,
+                            GateLog = gateLog
                         };
 
-            var combinedDataList = new List<object>();
+                        combinedDataList.Add(combinedData);
+                    }
 
-            foreach (var item in query.ToList()) // ใช้ .ToList() ที่นี่
-            {
-                var ojtSkills = _db.OJT_InspectionSkill.Where(o => o.EmpID == item.EmployeeInfo.EmpId).ToList();
-                var faceScanLog = _db.FaceScanLog.Where(s => s.Datetime.Date == targetDate && s.EMPLOYEE_ID == item.ManpowerPlan.EMPID)
-                                                  .OrderByDescending(s => s.Datetime)
-                                                  .FirstOrDefault();
-                var gateLog = _db.GateLog.Where(g => g.EmpID == item.ManpowerPlan.EMPID)
-                                          .OrderByDescending(g => g.Datetime)
-                                          .FirstOrDefault();
+                    return Ok(combinedDataList);
 
-                var combinedData = new
-                {
-                    ManpowerPlan = item.ManpowerPlan,
-                    EmployeeInfo = item.EmployeeInfo,
-                    OJT_InspectionSkill = ojtSkills,
-                    FaceScanLog = faceScanLog,
-                    GateLog = gateLog
-                };
-
-                combinedDataList.Add(combinedData);
-            }
-
-            return Ok(combinedDataList);
-
-        }*/
+                }*/
 
 
 
@@ -226,13 +273,36 @@
         }*/
 
 
-        // [HttpGet]
-        // [Route("[action]")]
-        // public IActionResult GateLog()
-        // {
-        //     IEnumerable <GateLog> GateLog = _db.GateLog;
-        //     return Ok(GateLog);
-        //}
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult Replacement()
+        {
+            DateTime targetDate = new DateTime(2024, 2, 1);
+
+            IEnumerable<Replacement> replacements;
+
+            // เช็คเงื่อนไข Shift เป็น "Day" และตรงกับเวลาที่กำหนด
+            if (targetDate.Hour >= 7 && targetDate.Hour < 19)
+            {
+                replacements = _db.Replacement
+                    .Where(r => r.Date.Date == targetDate.Date && r.Shift == "Day")
+                    .ToList();
+            }
+            // เช็คเงื่อนไข Shift เป็น "Night" และตรงกับเวลาที่กำหนด
+            else if (targetDate.Hour >= 19 || targetDate.Hour < 7)
+            {
+                replacements = _db.Replacement
+                    .Where(r => r.Date.Date == targetDate.Date && r.Shift == "Night")
+                    .ToList();
+            }
+            else
+            {
+                replacements = Enumerable.Empty<Replacement>(); // ไม่มีข้อมูลใน shift ที่กำหนด
+            }
+
+            return Ok(replacements);
+        }
+
 
         [HttpGet]
             [Route("[action]")]
@@ -253,71 +323,26 @@
         [Route("[action]")]
         public IActionResult HeadCountTransitionCOUNT()
         {
-            DateTime targetDate = new DateTime(2024, 2, 1);    //DateTime.Now.Month;
+            DateTime targetDate = new DateTime(2024, 2, 1); //DateTime.Now.Month;
 
             var query = from m in _db.ManpowerRequire
-                        join ei in _db.EmployeeInfo on m.Process equals ei.Process
                         where m.Date.Date == targetDate
-                        group new { m, ei } by new { m.Biz, m.Process, m.Date, m.Require, m.SkillGroup } into grouped
+                        join ojt in _db.OJT_InspectionSkill on new { m.Biz, m.Process, m.SkillGroup } equals new { ojt.Biz, ojt.Process, ojt.SkillGroup }
+                        join mp in _db.Manpower_Plan on ojt.EmpID equals mp.EMPID
+                        where mp.Date.Date == targetDate
+                        group new { mp, ojt } by new { ojt.Biz, ojt.Process, ojt.SkillGroup ,m.Require } into grouped
                         select new
                         {
                             Biz = grouped.Key.Biz,
                             Process = grouped.Key.Process,
-                            Date = grouped.Key.Date,
-                            Require = grouped.Key.Require,
                             SkillGroup = grouped.Key.SkillGroup,
-                            TotalEmployees = grouped.Count()
+                            Day = grouped.Count(x => x.mp.Shift == "Day"),
+                            Night = grouped.Count(x => x.mp.Shift == "Night"),
+                            Require = grouped.Key.Require
                         };
 
             return Ok(query.ToList());
-
-
         }
-        /*[HttpGet]
-        [Route("[action]")]
-        public IActionResult NOT_INCLEAN()
-        {
-            DateTime targetDate = new DateTime(2024, 2, 1);
-
-            // ดึงข้อมูลจาก Manpower_Plan และ EmployeeInfo
-            var query = from m in _db.Manpower_Plan
-                        join ei in _db.EmployeeInfo on m.EMPID equals ei.EmpId
-                        where m.Date.Date == targetDate
-                        select new
-                        {
-                            ManpowerPlan = m,
-                            EmployeeInfo = ei
-                        };
-
-            var combinedDataList = new List<object>();
-
-            foreach (var item in query.ToList())
-            {
-                // ดึงข้อมูล Transaction ที่ตรงกับ employeeID จาก Manpower_Plan และ EmployeeInfo
-                var transactionDataList = _db.Transaction_data
-                    .Where(td => td.EmployeeID == item.EmployeeInfo.EmpId)
-                    .Select(td => new
-                    {
-                        td.EmployeeID,
-                        td.Name,
-                        td.DateTime,
-                        td.CameraNo
-                    })
-                    .ToList();
-
-                
-                    var combinedData = new
-                    {
-                        EmployeeInfo = item.EmployeeInfo,
-                        TransactionData = transactionDataList
-                    };
-
-                    combinedDataList.Add(combinedData);
-                
-            }
-
-            return Ok(combinedDataList);
-        }*/
 
 
 
@@ -354,27 +379,22 @@
                        td.EmployeeID,
                        td.Name,
                        td.DateTime,
-                       td.CameraNo
-                   })
-                   .ToList();
-
+                       td.CameraNo,
+                       item.EmployeeInfo.Biz,
+                       item.EmployeeInfo.Process
+                   }).ToList();
 
                 // เพิ่มเงื่อนไขเชื่อมโยงเพื่อตรวจสอบสถานะของ faceScanLog และ gateLog
                 if ((faceScanLog != null && faceScanLog.Status == "IN") && (gateLog == null || gateLog.Status == "OUT"))
                 {
-
-                    var combinedData = new
-                    {
-                        EmployeeInfo = item.EmployeeInfo,
-                        TransactionData = transactionDataList
-                    };
-
-                    combinedDataList.Add(combinedData);
+                    // Concatenate the transaction data directly to the combinedDataList
+                    combinedDataList.AddRange(transactionDataList);
                 }
             }
 
             return Ok(combinedDataList);
         }
+
         /*[HttpGet]
         [Route("[action]")]
         public IActionResult HeadCountTransitionCOUNT()

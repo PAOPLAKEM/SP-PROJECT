@@ -21,6 +21,7 @@ namespace Api.Data
         public DbSet<HeadCountbyDiv> HeadCountbyDiv { get; set; }
         public DbSet<HeadCountbyWorkGroup> HeadCountbyWorkGroup { get; set; }
         public DbSet<Transaction_data> Transaction_data { get; set; }
+        public DbSet<Replacement> Replacement { get; set; }
 
     }
 }
