@@ -5,6 +5,7 @@
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
+using System.Threading.Tasks;
 
 
 
@@ -584,15 +585,36 @@
                 IEnumerable <HeadCountbyWorkGroup> HeadCountbyWorkGroup = _db.HeadCountbyWorkGroup;
                 return Ok(HeadCountbyWorkGroup);
             }
+        [HttpPost]
+        [Route("api/replacement")] // ปรับเป็น Route ที่ถูกต้อง
+        public async Task<IActionResult> PostReplacement([FromBody] Replacement replacement)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-            //[HttpGet]
-            //[Route("[action]")]
-            //public IActionResult Manpower_Plan()
-            //{
-              //  IEnumerable<Manpower_Plan> Manpower_Plan = _db.Manpower_Plan;
-                //return Ok(Manpower_Plan);
-            //}
+            try
+            {
+                // Set the Date property to current date time
+                replacement.Date = DateTime.Now;
 
+                // Add the replacement object to the context
+                _db.Replacement.Add(replacement); // ใช้ _db แทน _context
+
+                // Save changes to the database
+                await _db.SaveChangesAsync(); // ใช้ _db แทน _context
+
+                return CreatedAtAction("GetReplacement", new { id = replacement.EmpID }, replacement);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
 
+
     }
+
+
+}

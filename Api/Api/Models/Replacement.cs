@@ -4,10 +4,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Api.Models
 {
-    [Keyless]
     public class Replacement
     {
-
+        [Key]
+        public int Id { get; set; } // ตัวอย่างการกำหนด primary key
         [Required]
         public string EmpID { get; set; }
         public string FirstName { get; set; }
