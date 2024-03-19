@@ -6,17 +6,17 @@ namespace Api.Models
     public class Transaction_data
     {
         [Key]
-        public int autoID { get; set; }
+        public int id { get; set; }
 
         [Required]
-        public string EmployeeID { get; set; }
+        public string EmpID { get; set; }
         public string Name { get; set; }
 
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd HH:mm}")]
         [DataType(DataType.Date)]
         public DateTime DateTime { get; set; }
-        public int CameraNo { get; set; }
         public string Image { get; set; }
+        public string CameraNO_id { get; set; }
     }
 
 }

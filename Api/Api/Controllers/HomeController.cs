@@ -5,7 +5,7 @@
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
-using System.Threading.Tasks;
+    using System.Threading.Tasks;
 
 
 
@@ -355,7 +355,9 @@ using System.Threading.Tasks;
 
             var query = from m in _db.Manpower_Plan
                         join ei in _db.EmployeeInfo on m.EMPID equals ei.EmpId
-                        where m.Date.Date == targetDate
+                        where m.Date.Date == targetDate &&
+                              ((targetDate.Hour >= 7 && targetDate.Hour < 19 && m.Shift == "Day") ||
+                               (targetDate.Hour >= 19 || targetDate.Hour < 7 && m.Shift == "Night"))
                         select new
                         {
                             ManpowerPlan = m,
@@ -370,17 +372,17 @@ using System.Threading.Tasks;
                                                   .OrderByDescending(s => s.Datetime)
                                                   .FirstOrDefault();
 
-                var gateLog = _db.GateLog.Where(g => g.EmpID == item.ManpowerPlan.EMPID)
+                var gateLog = _db.GateLog.Where(g => g.Datetime.Date == targetDate && g.EmpID == item.ManpowerPlan.EMPID)
                                           .OrderByDescending(g => g.Datetime)
                                           .FirstOrDefault();
-                var transactionDataList = _db.Transaction_data
-                   .Where(td => td.EmployeeID == item.EmployeeInfo.EmpId)
+                var transactionDataList = _db.face_recog_transaction
+                   .Where(td => td.EmpID == item.EmployeeInfo.EmpId)
                    .Select(td => new
                    {
-                       td.EmployeeID,
+                       td.EmpID,
                        td.Name,
                        td.DateTime,
-                       td.CameraNo,
+                       td.CameraNO_id,
                        item.EmployeeInfo.Biz,
                        item.EmployeeInfo.Process
                    }).ToList();
