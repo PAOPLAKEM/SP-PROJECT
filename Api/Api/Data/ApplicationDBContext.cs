@@ -22,6 +22,7 @@ namespace Api.Data
         public DbSet<HeadCountbyWorkGroup> HeadCountbyWorkGroup { get; set; }
         public DbSet<Transaction_data> face_recog_transaction { get; set; }
         public DbSet<Replacement> Replacement { get; set; }
+        public DbSet<LOGCAM> face_recog_camera { get; set; }
 
     }
 }

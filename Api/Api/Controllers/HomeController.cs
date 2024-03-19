@@ -376,16 +376,20 @@
                                           .OrderByDescending(g => g.Datetime)
                                           .FirstOrDefault();
                 var transactionDataList = _db.face_recog_transaction
-                   .Where(td => td.EmpID == item.EmployeeInfo.EmpId)
-                   .Select(td => new
-                   {
-                       td.EmpID,
-                       td.Name,
-                       td.DateTime,
-                       td.CameraNO_id,
-                       item.EmployeeInfo.Biz,
-                       item.EmployeeInfo.Process
-                   }).ToList();
+                    .Where(td => td.EmpID == item.EmployeeInfo.EmpId)
+                    .Join(_db.face_recog_camera,
+                          transaction => transaction.CameraNO_id,
+                          logcam => logcam.CameraNo,
+                          (transaction, logcam) => new
+                          {
+                              transaction.EmpID,
+                              transaction.Name,
+                              transaction.DateTime,
+                              logcam.Location, 
+                              item.EmployeeInfo.Biz,
+                              item.EmployeeInfo.Process
+                          })
+                    .ToList();
 
                 // เพิ่มเงื่อนไขเชื่อมโยงเพื่อตรวจสอบสถานะของ faceScanLog และ gateLog
                 if ((faceScanLog != null && faceScanLog.Status == "IN") && (gateLog == null || gateLog.Status == "OUT"))
@@ -588,7 +592,7 @@
                 return Ok(HeadCountbyWorkGroup);
             }
         [HttpPost]
-        [Route("api/replacement")] // ปรับเป็น Route ที่ถูกต้อง
+        [Route("api/replacement")] 
         public async Task<IActionResult> PostReplacement([FromBody] Replacement replacement)
         {
             if (!ModelState.IsValid)
@@ -598,14 +602,14 @@
 
             try
             {
-                // Set the Date property to current date time
+                
                 replacement.Date = DateTime.Now;
 
-                // Add the replacement object to the context
-                _db.Replacement.Add(replacement); // ใช้ _db แทน _context
+                
+                _db.Replacement.Add(replacement); 
 
-                // Save changes to the database
-                await _db.SaveChangesAsync(); // ใช้ _db แทน _context
+               
+                await _db.SaveChangesAsync(); 
 
                 return CreatedAtAction("GetReplacement", new { id = replacement.EmpID }, replacement);
             }
