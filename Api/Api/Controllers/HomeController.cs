@@ -45,23 +45,23 @@
         //    return Ok(OJT_InspectionSkill);
         // }
 
-        // [HttpGet]
-        // [Route("[action]")]
-        // public IActionResult ManpowerRequire()
-        // {
-        //    IEnumerable <ManpowerRequire> ManpowerRequire = _db.ManpowerRequire;
-        //    return Ok(ManpowerRequire);
-        // }
+         /*[HttpGet]
+         [Route("[action]")]
+         public IActionResult get_Repalce()
+         {
+            IEnumerable <Replacement> Replace = _db.Replacement;
+            return Ok(Replace);
+         }*/
 
         [HttpGet]
         [Route("[action]")]
         public IActionResult REALTIME_ATTEN()
         {
-            DateTime targetDate = new DateTime(2024, 2, 1);
+            DateTime targetDate = DateTime.Now;
 
             var query = from m in _db.Manpower_Plan
                         join ei in _db.EmployeeInfo on m.EMPID equals ei.EmpId
-                        where m.Date.Date == targetDate && m.Attendance == "O"
+                        where m.Date.Date == targetDate.Date && m.Attendance == "O"
                         select new
                         {
                             ManpowerPlan = m,
@@ -111,11 +111,11 @@
         [Route("[action]")]
         public IActionResult CombinedData()
         {
-            DateTime targetDate = new DateTime(2024, 2, 1);
+            DateTime targetDate = DateTime.Now;
 
             var query = from m in _db.Manpower_Plan
                         join ei in _db.EmployeeInfo on m.EMPID equals ei.EmpId
-                        where m.Date.Date == targetDate && m.Attendance == "O"
+                        where m.Date.Date == targetDate.Date && m.Attendance == "O"
                         select new
                         {
                             ManpowerPlan = m,
@@ -278,7 +278,7 @@
         [Route("[action]")]
         public IActionResult Replacement()
         {
-            DateTime targetDate = new DateTime(2024, 2, 1);
+            DateTime targetDate = DateTime.Now;
 
             IEnumerable<Replacement> replacements;
 
@@ -324,14 +324,14 @@
         [Route("[action]")]
         public IActionResult HeadCountTransitionCOUNT()
         {
-            DateTime targetDate = new DateTime(2024, 2, 1); //DateTime.Now.Month;
+            DateTime targetDate = DateTime.Now;
 
             var query = from m in _db.ManpowerRequire
-                        where m.Date.Date == targetDate
+                        where m.Date.Date == targetDate.Date // เปรียบเทียบแค่วันที่
                         join ojt in _db.OJT_InspectionSkill on new { m.Biz, m.Process, m.SkillGroup } equals new { ojt.Biz, ojt.Process, ojt.SkillGroup }
                         join mp in _db.Manpower_Plan on ojt.EmpID equals mp.EMPID
-                        where mp.Date.Date == targetDate
-                        group new { mp, ojt } by new { ojt.Biz, ojt.Process, ojt.SkillGroup ,m.Require } into grouped
+                        where mp.Date.Date == targetDate.Date // เปรียบเทียบแค่วันที่
+                        group new { mp, ojt } by new { ojt.Biz, ojt.Process, ojt.SkillGroup, m.Require } into grouped
                         select new
                         {
                             Biz = grouped.Key.Biz,
@@ -343,6 +343,7 @@
                         };
 
             return Ok(query.ToList());
+
         }
 
 
@@ -351,11 +352,11 @@
         [Route("[action]")]
         public IActionResult NOT_INCLEAN()
         {
-            DateTime targetDate = new DateTime(2024, 2, 1);
+            DateTime targetDate = DateTime.Now;
 
             var query = from m in _db.Manpower_Plan
                         join ei in _db.EmployeeInfo on m.EMPID equals ei.EmpId
-                        where m.Date.Date == targetDate &&
+                        where m.Date.Date == targetDate.Date &&
                               ((targetDate.Hour >= 7 && targetDate.Hour < 19 && m.Shift == "Day") ||
                                (targetDate.Hour >= 19 || targetDate.Hour < 7 && m.Shift == "Night"))
                         select new
@@ -368,11 +369,11 @@
 
             foreach (var item in query.ToList()) // ใช้ .ToList() ที่นี่
             {
-                var faceScanLog = _db.FaceScanLog.Where(s => s.Datetime.Date == targetDate && s.EMPLOYEE_ID == item.ManpowerPlan.EMPID)
+                var faceScanLog = _db.FaceScanLog.Where(s => s.Datetime.Date == targetDate.Date && s.EMPLOYEE_ID == item.ManpowerPlan.EMPID)
                                                   .OrderByDescending(s => s.Datetime)
                                                   .FirstOrDefault();
 
-                var gateLog = _db.GateLog.Where(g => g.Datetime.Date == targetDate && g.EmpID == item.ManpowerPlan.EMPID)
+                var gateLog = _db.GateLog.Where(g => g.Datetime.Date == targetDate.Date && g.EmpID == item.ManpowerPlan.EMPID)
                                           .OrderByDescending(g => g.Datetime)
                                           .FirstOrDefault();
                 var transactionDataList = _db.face_recog_transaction
